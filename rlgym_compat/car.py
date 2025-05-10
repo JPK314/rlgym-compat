@@ -101,12 +101,16 @@ class Car:
         return self.supersonic_time > 0
 
     @property
+    def wheels_with_contact(self) -> bool:
+        return (self.on_ground,) * 4  # Approximation
+
+    @property
+    def has_flip(self) -> bool:
+        return not self.has_double_jumped and not self.has_flipped and self.air_time_since_jump < DOUBLEJUMP_MAX_DELAY
+
+    @property
     def can_flip(self) -> bool:
-        return (
-            not self.has_double_jumped
-            and not self.has_flipped
-            and self.air_time_since_jump < DOUBLEJUMP_MAX_DELAY
-        )
+        return not self.on_ground and not self.is_holding_jump and self.has_flip
 
     @property
     def is_flipping(self) -> bool:
