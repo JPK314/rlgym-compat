@@ -5,9 +5,12 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 release_notes = {
+    "2.0.1": """
+    - Fix can_flip property when on ground to better match RLGym
+    """,
     "2.0.0": """
     - Modify for RLGym v2 and RLBot v5
     """,
