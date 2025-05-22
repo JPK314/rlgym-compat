@@ -5,9 +5,12 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.0.2"
+__version__ = "2.1.0"
 
 release_notes = {
+    "2.1.0": """
+    - Update car state to match RLGym 2.0.1
+    """,
     "2.0.2": """
     - Fix rename of BoostMutator to BoostAmountMutator in sim extra info
     """,
