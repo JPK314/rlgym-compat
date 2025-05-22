@@ -164,7 +164,7 @@ class SimExtraInfo:
     def _get_extra_player_info(self, car) -> ExtraPlayerInfo:
         car_state = car.get_state()
         return ExtraPlayerInfo(
-            on_ground=car_state.is_on_ground,
+            wheels_with_contact=car_state.wheels_with_contact,
             handbrake=car_state.handbrake_val,
             ball_touches=sum(self._touches[car.id]),
             car_contact_id=(
