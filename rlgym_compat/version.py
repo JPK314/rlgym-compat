@@ -5,9 +5,12 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 
 release_notes = {
+    "2.0.2": """
+    - Fix rename of BoostMutator to BoostAmountMutator in sim extra info
+    """,
     "2.0.1": """
     - Fix can_flip property when on ground to better match RLGym
     """,
