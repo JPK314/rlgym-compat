@@ -31,13 +31,13 @@ class SimExtraInfo:
         self, field_info: FieldInfo, match_settings=MatchConfiguration(), tick_skip=8
     ):
         match match_settings.game_mode:
-            case GameMode.Soccer:
+            case GameMode.Soccar:
                 mode = rsim.GameMode.SOCCAR
             case GameMode.Hoops:
                 mode = rsim.GameMode.HOOPS
             case GameMode.Heatseeker:
                 mode = rsim.GameMode.HEATSEEKER
-            case GameMode.Hockey:
+            case GameMode.Snowday:
                 mode = rsim.GameMode.SNOWDAY
             case _:
                 raise NotImplementedError(match_settings.game_mode)
@@ -58,11 +58,11 @@ class SimExtraInfo:
             match mutators.ball_type:
                 case BallTypeMutator.Default:
                     assert (
-                        match_settings.game_mode == GameMode.Soccer
+                        match_settings.game_mode == GameMode.Soccar
                     ), "Cannot use non-soccer ball in soccer with sim"
                 case BallTypeMutator.Puck:
                     assert (
-                        match_settings.game_mode == GameMode.Hockey
+                        match_settings.game_mode == GameMode.Snowday
                     ), "Cannot use non-puck ball in hockey with sim"
                 case BallTypeMutator.Basketball:
                     assert (
@@ -142,8 +142,8 @@ class SimExtraInfo:
             # TODO: BallBouncinessOption
         self._ball_touched_on_tick: Dict[int, bool] = {}
         self._touches: Dict[int, deque[int]] = {}
-        self._car_id_spawn_id_map: Dict[int, int] = {}
-        self._spawn_id_car_id_map: Dict[int, int] = {}
+        self._car_id_player_id_map: Dict[int, int] = {}
+        self._player_id_car_id_map: Dict[int, int] = {}
         self._current_car_ids: set[int] = set()
         self._tick_skip = tick_skip
         self._first_call = True
@@ -170,7 +170,7 @@ class SimExtraInfo:
             car_contact_id=(
                 0
                 if car_state.car_contact_id == 0
-                else self._car_id_spawn_id_map[car_state.car_contact_id]
+                else self._car_id_player_id_map[car_state.car_contact_id]
             ),
             car_contact_cooldown_timer=car_state.car_contact_cooldown_timer,
             is_autoflipping=car_state.is_auto_flipping,
@@ -194,13 +194,13 @@ class SimExtraInfo:
 
         ticks_elapsed = packet.match_info.frame_num - self._tick_count
         self._tick_count = packet.match_info.frame_num
-        spawn_id_player_info_map = {
-            player_info.spawn_id: player_info for player_info in packet.players
+        player_id_player_info_map = {
+            player_info.player_id: player_info for player_info in packet.players
         }
         for car in self._arena.get_cars():
             car_controls = rsim.CarControls()
-            player_input = spawn_id_player_info_map[
-                self._car_id_spawn_id_map[car.id]
+            player_input = player_id_player_info_map[
+                self._car_id_player_id_map[car.id]
             ].last_input
             car_controls.throttle = player_input.throttle
             car_controls.steer = player_input.steer
@@ -234,8 +234,8 @@ class SimExtraInfo:
                 ),
             )
             if latest_touch_player_info.latest_touch is not None:
-                ball_state.last_hit_car_id = self._spawn_id_car_id_map[
-                    packet.players[latest_touch_player_idx].spawn_id
+                ball_state.last_hit_car_id = self._player_id_car_id_map[
+                    packet.players[latest_touch_player_idx].player_id
                 ]
             ball_state.pos = rsim.Vec(
                 packet_ball_physics.location.x,
@@ -261,7 +261,7 @@ class SimExtraInfo:
             )
         else:
             car = self._arena.get_car_from_id(
-                self._spawn_id_car_id_map[player_info.spawn_id]
+                self._player_id_car_id_map[player_info.player_id]
             )
         car_state = car.get_state()
         car_state.pos = rsim.Vec(*vector_to_numpy(player_info.physics.location))
@@ -285,14 +285,14 @@ class SimExtraInfo:
             car.id: deque([False] * self._tick_skip, self._tick_skip),
             **self._touches,
         }
-        self._car_id_spawn_id_map[car.id] = player_info.spawn_id
-        self._spawn_id_car_id_map[player_info.spawn_id] = car.id
+        self._car_id_player_id_map[car.id] = player_info.player_id
+        self._player_id_car_id_map[player_info.player_id] = car.id
         self._current_car_ids.add(car.id)
 
     def _is_new_car(self, player_info: PlayerInfo):
         return (
-            player_info.spawn_id not in self._spawn_id_car_id_map
-            or self._spawn_id_car_id_map[player_info.spawn_id]
+            player_info.player_id not in self._player_id_car_id_map
+            or self._player_id_car_id_map[player_info.player_id]
             not in self._current_car_ids
         )
 
@@ -304,16 +304,16 @@ class SimExtraInfo:
 
         # Remove data for cars that are no longer in the packet
         packet_car_ids = [
-            self._spawn_id_car_id_map[player_info.spawn_id]
+            self._player_id_car_id_map[player_info.player_id]
             for player_info in packet.players
         ]
         for car_id in list(self._current_car_ids):
             if car_id not in packet_car_ids:
                 self._arena.remove_car(car_id)
                 self._current_car_ids.remove(car_id)
-                spawn_id = self._car_id_spawn_id_map.pop(car_id, None)
-                if spawn_id is not None:
-                    self._spawn_id_car_id_map.pop(spawn_id, None)
+                player_id = self._car_id_player_id_map.pop(car_id, None)
+                if player_id is not None:
+                    self._player_id_car_id_map.pop(player_id, None)
                 self._touches.pop(car_id, None)
                 self._ball_touched_on_tick.pop(car_id, None)
 

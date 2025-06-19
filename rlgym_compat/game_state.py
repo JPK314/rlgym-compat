@@ -119,15 +119,15 @@ class GameState:
 
         # Initialize new players
         for player_index, player_info in enumerate(packet.players):
-            if player_info.spawn_id not in self.cars:
-                self.cars[player_info.spawn_id] = Car.create_compat_car(
+            if player_info.player_id not in self.cars:
+                self.cars[player_info.player_id] = Car.create_compat_car(
                     packet, player_index, self._tick_skip
                 )
         # Remove old players
-        packet_spawn_ids = [player.spawn_id for player in packet.players]
+        packet_player_ids = [player.player_id for player in packet.players]
         agent_ids_to_remove = []
         for agent_id in self.cars:
-            if agent_id not in packet_spawn_ids:
+            if agent_id not in packet_player_ids:
                 agent_ids_to_remove.append(agent_id)
         for agent_id in agent_ids_to_remove:
             self.cars.pop(agent_id)
@@ -147,7 +147,7 @@ class GameState:
             ball = None
 
         for player_index, player_info in enumerate(packet.players):
-            self.cars[player_info.spawn_id].update(
+            self.cars[player_info.player_id].update(
                 player_info,
                 packet.match_info.frame_num,
                 extra_player_info=(

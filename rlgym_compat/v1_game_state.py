@@ -35,22 +35,22 @@ class V1GameState:
         self._sort_players_by_car_id = sort_players_by_car_id
 
     def _recalculate_fields(self):
-        spawn_id_spectator_id_map = {}
+        player_id_spectator_id_map = {}
         blue_spectator_id = 1
-        for spawn_id, car in self._game_state.cars.items():
+        for player_id, car in self._game_state.cars.items():
             if car.team_num == BLUE_TEAM:
-                spawn_id_spectator_id_map[spawn_id] = blue_spectator_id
+                player_id_spectator_id_map[player_id] = blue_spectator_id
                 blue_spectator_id += 1
         orange_spectator_id = max(5, blue_spectator_id)
-        for spawn_id, car in self._game_state.cars.items():
+        for player_id, car in self._game_state.cars.items():
             if car.team_num == ORANGE_TEAM:
-                spawn_id_spectator_id_map[spawn_id] = orange_spectator_id
+                player_id_spectator_id_map[player_id] = orange_spectator_id
                 orange_spectator_id += 1
         for player_data in self.players:
             player_data.update_from_v2(
-                self._game_state.cars[player_data.spawn_id],
-                spawn_id_spectator_id_map[player_data.spawn_id],
-                self._boost_pickups[player_data.spawn_id],
+                self._game_state.cars[player_data.player_id],
+                player_id_spectator_id_map[player_data.player_id],
+                self._boost_pickups[player_data.player_id],
             )
         if self._sort_players_by_car_id:
             self.players.sort(key=lambda p: p.car_id)
@@ -80,18 +80,18 @@ class V1GameState:
             else latest_touch_player_idx
         )
         old_boost_amounts = {
-            **{p.spawn_id: p.boost / 100 for p in packet.players},
+            **{p.player_id: p.boost / 100 for p in packet.players},
             **{k: v.boost_amount for (k, v) in self._game_state.cars.items()},
         }
         self._game_state.update(packet, extra_info)
         self.players: List[V1PlayerData] = []
         for player_info in packet.players:
-            if player_info.spawn_id not in self._boost_pickups:
-                self._boost_pickups[player_info.spawn_id] = 0
+            if player_info.player_id not in self._boost_pickups:
+                self._boost_pickups[player_info.player_id] = 0
             if (
                 packet.match_info.match_phase in (MatchPhase.Active, MatchPhase.Kickoff)
-                and old_boost_amounts[player_info.spawn_id] < player_info.boost / 100
+                and old_boost_amounts[player_info.player_id] < player_info.boost / 100
             ):  # This isn't perfect but with decent fps it'll work
-                self._boost_pickups[player_info.spawn_id] += 1
+                self._boost_pickups[player_info.player_id] += 1
             self.players.append(V1PlayerData.create_base(player_info))
         self._recalculate_fields()
