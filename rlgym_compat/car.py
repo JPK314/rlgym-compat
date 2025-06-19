@@ -79,7 +79,7 @@ class Car:
     _tick_skip: int
     _ball_touch_ticks: deque[bool]  # history for past _tick_skip ticks
     _prev_air_state: int
-    _game_seconds: int
+    _game_seconds: float
     _cur_tick: int
 
     __slots__ = tuple(__annotations__)
