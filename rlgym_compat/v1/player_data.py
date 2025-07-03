@@ -8,7 +8,7 @@ from .physics_object import PhysicsObject
 class PlayerData(object):
     def __init__(self):
         self.car_id: int = -1
-        self.spawn_id: int = -1
+        self.player_id: int = -1
         self.team_num: int = -1
         self.match_goals: int = -1
         self.match_saves: int = -1
@@ -27,7 +27,7 @@ class PlayerData(object):
     @staticmethod
     def create_base(player_info: PlayerInfo):
         player = PlayerData()
-        player.spawn_id = player_info.spawn_id
+        player.player_id = player_info.player_id
         player.match_goals = player_info.score_info.goals
         player.match_saves = player_info.score_info.saves
         player.match_shots = player_info.score_info.shots
