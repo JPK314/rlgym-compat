@@ -76,7 +76,7 @@ class Car:
     _inverted_physics: PhysicsObject  # Cache for inverted physics
 
     # RLBot Compat specific fields
-    _tick_skip: int
+    _next_action_tick_duration: int
     _ball_touch_ticks: deque[bool]  # history for past _tick_skip ticks
     _prev_air_state: int
     _game_seconds: float
@@ -173,7 +173,9 @@ class Car:
         return OCTANE
 
     @staticmethod
-    def create_compat_car(packet: GamePacket, player_index: int, tick_skip: int):
+    def create_compat_car(
+        packet: GamePacket, player_index: int, action_tick_duration: int
+    ):
         player_info = packet.players[player_index]
         car = Car()
         car.team_num = BLUE_TEAM if player_info.team == 0 else ORANGE_TEAM
@@ -206,12 +208,13 @@ class Car:
         car.autoflip_timer = 0
         car.autoflip_direction = 0
         car.physics = PhysicsObject.create_compat_physics_object()
-        car._tick_skip = tick_skip
-        car._ball_touch_ticks = deque([False] * tick_skip, tick_skip)
         car._prev_air_state = int(player_info.air_state)
         car._game_seconds = packet.match_info.seconds_elapsed
         car._cur_tick = packet.match_info.frame_num
         return car
+
+    def reset_ball_touches(self):
+        self.ball_touches = 0
 
     def update(
         self,
@@ -225,8 +228,6 @@ class Car:
         time_elapsed = TICK_TIME * ticks_elapsed
         self._game_seconds += time_elapsed
 
-        for _ in range(min(self._tick_skip, ticks_elapsed)):
-            self._ball_touch_ticks.append(False)
         if player_info.latest_touch is not None:
             ticks_since_touch = int(
                 round(
@@ -234,9 +235,8 @@ class Car:
                     * TICKS_PER_SECOND
                 )
             )
-            if ticks_since_touch < self._tick_skip:
-                self._ball_touch_ticks[-(ticks_since_touch + 1)] = True
-        self.ball_touches = sum(self._ball_touch_ticks)
+            if ticks_since_touch < ticks_elapsed:
+                self.ball_touches += 1
         self.demo_respawn_timer = (
             0
             if player_info.demolished_timeout == -1

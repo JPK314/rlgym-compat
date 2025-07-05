@@ -34,12 +34,14 @@ class PlayerData(object):
         player.match_demolishes = player_info.score_info.demolitions
         return player
 
-    def update_from_v2(self, car: Car, car_id: int, boost_pickups: int):
+    def update_from_v2(
+        self, car: Car, car_id: int, boost_pickups: int, ball_touched: bool
+    ):
         self.car_id = car_id
         self.team_num = car.team_num
         self.is_demoed = car.is_demoed
         self.on_ground = car.on_ground
-        self.ball_touched = car.ball_touches > 0
+        self.ball_touched = ball_touched  # v2 does this subtly differently so we ignore car.ball_touches
         self.has_jump = not car.has_jumped
         self.has_flip = (
             not car.has_flipped

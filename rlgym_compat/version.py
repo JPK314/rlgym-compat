@@ -5,9 +5,13 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 
 release_notes = {
+    "2.2.0": """
+    - update to RLBot v5 release 0.7.x
+    - update ball touch tracking mechanism, requiring users to manually reset ball touches when appropriate (based on the results of the action parser and the delay used) when using the RLGym v2 compat object
+    """,
     "2.1.0": """
     - Update car state to match RLGym 2.0.1
     """,

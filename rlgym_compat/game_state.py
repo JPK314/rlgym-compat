@@ -2,7 +2,13 @@ from dataclasses import dataclass
 from typing import Dict, Optional
 
 import numpy as np
-from rlbot.flat import FieldInfo, GamePacket, GravityMutator, MatchConfiguration, MatchPhase
+from rlbot.flat import (
+    FieldInfo,
+    GamePacket,
+    GravityMutator,
+    MatchConfiguration,
+    MatchPhase,
+)
 
 from .car import Car
 from .common_values import BOOST_LOCATIONS
@@ -19,6 +25,7 @@ class GameState:
     config: GameConfig
     cars: Dict[int, Car]
     ball: PhysicsObject
+    next_action_tick_duration: int
     _inverted_ball: PhysicsObject
     boost_pad_timers: np.ndarray
     _inverted_boost_pad_timers: np.ndarray
@@ -54,11 +61,11 @@ class GameState:
     def create_compat_game_state(
         field_info: FieldInfo,
         match_settings=MatchConfiguration(),
-        tick_skip=8,
+        action_tick_duration=8,
         standard_map=True,
     ):
         state = GameState()
-        state._tick_skip = tick_skip
+        state.next_action_tick_duration = action_tick_duration
         state.tick_count = 0
         state.goal_scored = False
         state.config = GameConfig()
@@ -105,6 +112,10 @@ class GameState:
             ]
         state._first_update_call = True
         return state
+
+    def reset_car_ball_touches(self):
+        for car in self.cars.values():
+            car.reset_ball_touches()
 
     def update(
         self,
