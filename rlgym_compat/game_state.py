@@ -25,7 +25,6 @@ class GameState:
     config: GameConfig
     cars: Dict[int, Car]
     ball: PhysicsObject
-    next_action_tick_duration: int
     _inverted_ball: PhysicsObject
     boost_pad_timers: np.ndarray
     _inverted_boost_pad_timers: np.ndarray
@@ -61,11 +60,13 @@ class GameState:
     def create_compat_game_state(
         field_info: FieldInfo,
         match_settings=MatchConfiguration(),
-        action_tick_duration=8,
+        tick_skip=-1,
         standard_map=True,
     ):
+        assert (
+            tick_skip == -1
+        ), "`tick_skip` was passed as a parameter to `create_compat_game_state`. This parameter is no longer used and should be removed, but be warned - there has been a breaking change for Car ball_touches to better reflect how this variable relates to the number of game ticks your action parser returns engine actions for each time it is called (which is not necessarily constant). Users who care about `Car`s' ball_touches should take care to manually call the new method `reset_car_ball_touches` appropriately."
         state = GameState()
-        state.next_action_tick_duration = action_tick_duration
         state.tick_count = 0
         state.goal_scored = False
         state.config = GameConfig()

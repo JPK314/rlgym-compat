@@ -4,5 +4,5 @@
 test_rsim.py
 /collision_meshes
 /.vscode
-*.egg-info/**
+*.egg-info/
 build/
