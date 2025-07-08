@@ -20,7 +20,7 @@ class V1GameState:
         sort_players_by_car_id=False,
     ):
         self._game_state = GameState.create_compat_game_state(
-            field_info, match_settings, tick_skip, standard_map
+            field_info, match_settings, standard_map=standard_map
         )
         self.game_type = int(match_settings.game_mode)
         self.blue_score = 0
@@ -88,6 +88,8 @@ class V1GameState:
             **{k: v.boost_amount for (k, v) in self._game_state.cars.items()},
         }
         self._game_state.update(packet, extra_info)
+        # We don't want this number to grow too big, but we don't care about it otherwise because we track this separately (see below)
+        self._game_state.reset_car_ball_touches()
         self.players: List[V1PlayerData] = []
         for player_info in packet.players:
             player_id = player_info.player_id
