@@ -31,7 +31,7 @@ class SimExtraInfo:
         self, field_info: FieldInfo, match_settings=MatchConfiguration(), tick_skip=8
     ):
         match match_settings.game_mode:
-            case GameMode.Soccar:
+            case GameMode.Soccer:
                 mode = rsim.GameMode.SOCCAR
             case GameMode.Hoops:
                 mode = rsim.GameMode.HOOPS
@@ -58,7 +58,7 @@ class SimExtraInfo:
             match mutators.ball_type:
                 case BallTypeMutator.Default:
                     assert (
-                        match_settings.game_mode == GameMode.Soccar
+                        match_settings.game_mode == GameMode.Soccer
                     ), "Cannot use non-soccer ball in soccer with sim"
                 case BallTypeMutator.Puck:
                     assert (
