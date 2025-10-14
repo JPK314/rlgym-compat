@@ -187,7 +187,7 @@ class Car:
         car.demo_respawn_timer = 0
         car.on_ground = player_info.air_state == AirState.OnGround
         car.supersonic_time = 0
-        car.boost_amount = player_info.boost / 100
+        car.boost_amount = player_info.boost
         car.boost_active_time = 0
         car.handbrake = 0
         car.has_jumped = player_info.has_jumped
@@ -246,7 +246,7 @@ class Car:
             self.supersonic_time += time_elapsed
         else:
             self.supersonic_time = 0
-        self.boost_amount = player_info.boost / 100
+        self.boost_amount = player_info.boost
         # Taken from rocket sim
         if self.boost_active_time > 0:
             if (

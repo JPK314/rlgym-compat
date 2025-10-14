@@ -48,7 +48,7 @@ class PlayerData(object):
             and not car.has_double_jumped
             and car.air_time_since_jump < DOUBLEJUMP_MAX_DELAY
         )
-        self.boost_amount = car.boost_amount
+        self.boost_amount = car.boost_amount / 100
         self.boost_pickups = boost_pickups
         self.car_data = PhysicsObject.create_from_v2(car.physics)
         self.inverted_car_data = PhysicsObject.create_from_v2(car.inverted_physics)
