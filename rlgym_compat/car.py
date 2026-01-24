@@ -276,10 +276,6 @@ class Car:
         self.flip_torque[1] = player_info.dodge_dir.x
         if self.has_jumped or self.is_jumping:
             self.jump_time += TICK_TIME * ticks_elapsed
-        if player_info.dodge_timeout == -1:
-            self.air_time_since_jump = 0
-        else:
-            self.air_time_since_jump = DOUBLEJUMP_MAX_DELAY - player_info.dodge_timeout
 
         match player_info.air_state:
             case AirState.OnGround:
@@ -301,6 +297,12 @@ class Car:
             case AirState.DoubleJumping:
                 self.on_ground = False
                 self.is_jumping = False
+
+        if player_info.dodge_timeout != -1:
+            self.air_time_since_jump = DOUBLEJUMP_MAX_DELAY - player_info.dodge_timeout
+
+        if not self.has_jumped or self.is_jumping:
+            self.air_time_since_jump = 0
 
         self.physics.update(player_info.physics)
         self._inverted_physics = self.physics.inverted()

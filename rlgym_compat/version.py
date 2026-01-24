@@ -5,9 +5,13 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 
 release_notes = {
+    "2.3.0": """
+    - rename match_settings to match_configuration to better match the RLBot flat spec naming convention
+    - fix has_flip erroneously becoming true when the flip timer naturally expires while in the air
+    """,
     "2.2.0": """
     - update to RLBot v5 release 0.7.x
     - update ball touch tracking mechanism, requiring users to manually reset ball touches when appropriate (based on the results of the action parser and the delay used) when using the RLGym v2 compat object
