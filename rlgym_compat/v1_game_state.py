@@ -14,15 +14,15 @@ class V1GameState:
     def __init__(
         self,
         field_info: FieldInfo,
-        match_settings=MatchConfiguration(),
+        match_configuration=MatchConfiguration(),
         tick_skip=8,
         standard_map=True,
         sort_players_by_car_id=False,
     ):
         self._game_state = GameState.create_compat_game_state(
-            field_info, match_settings, standard_map=standard_map
+            field_info, match_configuration, standard_map=standard_map
         )
-        self.game_type = int(match_settings.game_mode)
+        self.game_type = int(match_configuration.game_mode)
         self.blue_score = 0
         self.orange_score = 0
         self.last_touch: Optional[int] = -1

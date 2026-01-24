@@ -28,9 +28,12 @@ from .utils import rotator_to_numpy, vector_to_numpy
 
 class SimExtraInfo:
     def __init__(
-        self, field_info: FieldInfo, match_settings=MatchConfiguration(), tick_skip=8
+        self,
+        field_info: FieldInfo,
+        match_configuration=MatchConfiguration(),
+        tick_skip=8,
     ):
-        match match_settings.game_mode:
+        match match_configuration.game_mode:
             case GameMode.Soccar:
                 mode = rsim.GameMode.SOCCAR
             case GameMode.Hoops:
@@ -40,11 +43,11 @@ class SimExtraInfo:
             case GameMode.Snowday:
                 mode = rsim.GameMode.SNOWDAY
             case _:
-                raise NotImplementedError(match_settings.game_mode)
+                raise NotImplementedError(match_configuration.game_mode)
         # TODO: ensure the boost pads are right
 
         # Ensure there are no mutators configured that we can't support
-        mutators = match_settings.mutators
+        mutators = match_configuration.mutators
         if mutators is not None:
             mutator_config = {}
             assert (
@@ -58,15 +61,15 @@ class SimExtraInfo:
             match mutators.ball_type:
                 case BallTypeMutator.Default:
                     assert (
-                        match_settings.game_mode == GameMode.Soccar
+                        match_configuration.game_mode == GameMode.Soccar
                     ), "Cannot use non-soccer ball in soccer with sim"
                 case BallTypeMutator.Puck:
                     assert (
-                        match_settings.game_mode == GameMode.Snowday
+                        match_configuration.game_mode == GameMode.Snowday
                     ), "Cannot use non-puck ball in hockey with sim"
                 case BallTypeMutator.Basketball:
                     assert (
-                        match_settings.game_mode == GameMode.Hoops
+                        match_configuration.game_mode == GameMode.Hoops
                     ), "Cannot use non-basketball ball in hoops with sim"
                 case _:
                     raise NotImplementedError(mutators.ball_type)

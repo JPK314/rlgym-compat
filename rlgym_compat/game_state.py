@@ -59,7 +59,7 @@ class GameState:
     @staticmethod
     def create_compat_game_state(
         field_info: FieldInfo,
-        match_settings=MatchConfiguration(),
+        match_configuration=MatchConfiguration(),
         tick_skip=-1,
         standard_map=True,
     ):
@@ -72,8 +72,8 @@ class GameState:
         state.config = GameConfig()
         state.config.boost_consumption = 1  # Not modifiable
         state.config.dodge_deadzone = 0.5  # Not modifiable
-        if match_settings.mutators is not None:
-            match match_settings.mutators.gravity:
+        if match_configuration.mutators is not None:
+            match match_configuration.mutators.gravity:
                 case GravityMutator.Low:
                     gravity = -325
                 case GravityMutator.Default:
