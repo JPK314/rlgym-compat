@@ -226,9 +226,6 @@ class SimExtraInfo:
         self._set_sim_state(packet)
         return self._get_extra_packet_info()
 
-    def clear_ball_touch_ticks(self):
-        self._ball_touch_ticks = {k: [] for k in self._ball_touch_ticks}
-
     def _set_ball_state(self, packet: GamePacket):
         if len(packet.balls) > 0:
             ball = self._arena.ball
