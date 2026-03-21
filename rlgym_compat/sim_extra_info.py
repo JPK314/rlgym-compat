@@ -1,5 +1,4 @@
-from collections import deque
-from typing import Dict
+from typing import Dict, List
 
 import RocketSim as rsim
 from rlbot.flat import (
@@ -31,7 +30,7 @@ class SimExtraInfo:
         self,
         field_info: FieldInfo,
         match_configuration=MatchConfiguration(),
-        tick_skip=8,
+        ball_touch_ticks_max_len=100,
     ):
         match match_configuration.game_mode:
             case GameMode.Soccar:
@@ -143,12 +142,13 @@ class SimExtraInfo:
             # TODO: BallWeightOption
             # TODO: BallSizeOption
             # TODO: BallBouncinessOption
+        self.ball_touch_ticks_max_len = ball_touch_ticks_max_len
+
         self._ball_touched_on_tick: Dict[int, bool] = {}
-        self._touches: Dict[int, deque[int]] = {}
+        self._ball_touch_ticks: Dict[int, List[int]] = {}
         self._car_id_player_id_map: Dict[int, int] = {}
         self._player_id_car_id_map: Dict[int, int] = {}
         self._current_car_ids: set[int] = set()
-        self._tick_skip = tick_skip
         self._first_call = True
         self._tick_count = 0
         self._arena = rsim.Arena(mode)
@@ -169,7 +169,7 @@ class SimExtraInfo:
         return ExtraPlayerInfo(
             wheels_with_contact=car_state.wheels_with_contact,
             handbrake=car_state.handbrake_val,
-            ball_touches=sum(self._touches[car.id]),
+            ball_touch_ticks=self._ball_touch_ticks[car.id],
             car_contact_id=(
                 0
                 if car_state.car_contact_id == 0
@@ -196,7 +196,6 @@ class SimExtraInfo:
             return self._get_extra_packet_info()
 
         ticks_elapsed = packet.match_info.frame_num - self._tick_count
-        self._tick_count = packet.match_info.frame_num
         player_id_player_info_map = {
             player_info.player_id: player_info for player_info in packet.players
         }
@@ -214,13 +213,21 @@ class SimExtraInfo:
             car_controls.jump = player_input.jump
             car_controls.handbrake = player_input.handbrake
             car.set_controls(car_controls)
-        for _ in range(ticks_elapsed):
+        for t in range(ticks_elapsed):
             self._ball_touched_on_tick = {k: False for k in self._ball_touched_on_tick}
             self._arena.step(1)
-            for k, v in self._ball_touched_on_tick.items():
-                self._touches[k].append(v)
+            for car_id, ball_touched in self._ball_touched_on_tick.items():
+                if ball_touched:
+                    self._ball_touch_ticks[car_id].append(self._tick_count + t + 1)
+        self._ball_touch_ticks = {
+            k: v[-self.ball_touch_ticks_max_len :] for (k, v) in self._ball_touch_ticks
+        }
+        self._tick_count = packet.match_info.frame_num
         self._set_sim_state(packet)
         return self._get_extra_packet_info()
+
+    def clear_ball_touch_ticks(self):
+        self._ball_touch_ticks = {k: [] for k in self._ball_touch_ticks}
 
     def _set_ball_state(self, packet: GamePacket):
         if len(packet.balls) > 0:
@@ -284,9 +291,9 @@ class SimExtraInfo:
             player_info.demolished_timeout * car_state.is_demoed
         )
         car.set_state(car_state)
-        self._touches = {
-            car.id: deque([False] * self._tick_skip, self._tick_skip),
-            **self._touches,
+        self._ball_touch_ticks = {
+            car.id: [],
+            **self._ball_touch_ticks,
         }
         self._car_id_player_id_map[car.id] = player_info.player_id
         self._player_id_car_id_map[player_info.player_id] = car.id
@@ -317,7 +324,7 @@ class SimExtraInfo:
                 player_id = self._car_id_player_id_map.pop(car_id, None)
                 if player_id is not None:
                     self._player_id_car_id_map.pop(player_id, None)
-                self._touches.pop(car_id, None)
+                self._ball_touch_ticks.pop(car_id, None)
                 self._ball_touched_on_tick.pop(car_id, None)
 
     def _set_sim_state(self, packet: GamePacket):

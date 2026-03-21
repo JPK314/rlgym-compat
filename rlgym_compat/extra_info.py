@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 class ExtraPlayerInfo:
     wheels_with_contact: Optional[Tuple[bool, bool, bool, bool]]
     handbrake: Optional[float]
-    ball_touches: Optional[int]
+    ball_touch_ticks: Optional[List[int]]
     car_contact_id: Optional[int]
     car_contact_cooldown_timer: Optional[float]
     is_autoflipping: Optional[bool]

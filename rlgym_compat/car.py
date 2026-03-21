@@ -211,10 +211,12 @@ class Car:
         car._prev_air_state = int(player_info.air_state)
         car._game_seconds = packet.match_info.seconds_elapsed
         car._cur_tick = packet.match_info.frame_num
+        car._last_reset_ball_touches_tick = packet.match_info.frame_num
         return car
 
     def reset_ball_touches(self):
         self.ball_touches = 0
+        self._last_reset_ball_touches_tick = self._cur_tick
 
     def update(
         self,
@@ -313,8 +315,14 @@ class Car:
                 self.wheels_with_contact = extra_player_info.wheels_with_contact
             if extra_player_info.handbrake is not None:
                 self.handbrake = extra_player_info.handbrake
-            if extra_player_info.ball_touches is not None:
-                self.ball_touches = extra_player_info.ball_touches
+            if extra_player_info.ball_touch_ticks is not None:
+                self.ball_touches = len(
+                    [
+                        v
+                        for v in extra_player_info.ball_touch_ticks
+                        if v > self._last_reset_ball_touches_tick
+                    ]
+                )
             if (
                 extra_player_info.car_contact_id is not None
                 and extra_player_info.car_contact_cooldown_timer is not None

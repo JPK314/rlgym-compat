@@ -91,13 +91,13 @@ class V1GameState:
         # We don't want this number to grow too big, but we don't care about it otherwise because we track this separately (see below)
         self._game_state.reset_car_ball_touches()
         self.players: List[V1PlayerData] = []
-        for player_info in packet.players:
+        for idx, player_info in enumerate(packet.players):
             player_id = player_info.player_id
             if player_id not in self._boost_pickups:
                 self._boost_pickups[player_id] = 0
             if player_id not in self._car_ball_touched:
                 self._car_ball_touched[player_id] = False
-            # We can't use the RLGym v2's car ball touches since those are tracked per action sequence (with some offset based on delay usage) instead of based on tick skip, so calculate them here
+            # We can't use the RLGym v2's car ball touches since those are tracked per action sequence (with some offset based on delay usage) instead of based on tick skip, so calculate them her
             if player_info.latest_touch is not None:
                 ticks_since_touch = int(
                     round(
@@ -110,6 +110,18 @@ class V1GameState:
                 )
                 if ticks_since_touch < self._tick_skip:
                     self._car_ball_touched[player_id] = True
+            # Override self._car_ball_touched using extra info if available
+            if extra_info is not None and extra_info.players is not None:
+                if extra_info.players[idx].ball_touch_ticks is not None:
+                    if (
+                        len(extra_info.players[idx].ball_touch_ticks) > 0
+                        and packet.match_info.frame_num
+                        - max(extra_info.players[idx].ball_touch_ticks)
+                        < self._tick_skip
+                    ):
+                        self._car_ball_touched[player_id] = True
+                    else:
+                        self._car_ball_touched[player_id] = False
             if (
                 packet.match_info.match_phase in (MatchPhase.Active, MatchPhase.Kickoff)
                 and old_boost_amounts[player_info.player_id] < player_info.boost / 100
