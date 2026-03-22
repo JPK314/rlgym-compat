@@ -81,6 +81,7 @@ class Car:
     _prev_air_state: int
     _game_seconds: float
     _cur_tick: int
+    _last_reset_ball_touches_tick: int
 
     __slots__ = tuple(__annotations__)
 
