@@ -1,6 +1,11 @@
 from typing import Dict, List
 
-import RocketSim as rsim
+try:
+    import RocketSim as rsim
+
+    rs_successfully_imported = True
+except:
+    rs_successfully_imported = False
 from rlbot.flat import (
     BallTypeMutator,
     BoostAmountMutator,
@@ -32,6 +37,9 @@ class SimExtraInfo:
         match_configuration=MatchConfiguration(),
         ball_touch_ticks_max_len=100,
     ):
+        assert (
+            rs_successfully_imported
+        ), "SimExtraInfo cannot be used without having RocketSim installed."
         match match_configuration.game_mode:
             case GameMode.Soccar:
                 mode = rsim.GameMode.SOCCAR

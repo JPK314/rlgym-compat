@@ -5,9 +5,12 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.3.1"
+__version__ = "2.3.2"
 
 release_notes = {
+    "2.3.2": """
+    - fix RocketSim failure to import breaking things even if SimExtraInfo is unused
+    """,
     "2.3.1": """
     - change ExtraPlayerInfo to use ball_touch_ticks: Optional[List[int]] instead of ball_touches: Optional[int] and update other classes accordingly
     - remove tick_skip from SimExtraInfo and instead include a parameter to control how many ball touch ticks will be stored per player in the SimExtraInfo class (100 is default and that should be fine for most use cases)
