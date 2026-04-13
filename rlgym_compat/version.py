@@ -5,9 +5,12 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.3.2"
+__version__ = "2.3.3"
 
 release_notes = {
+    "2.3.3": """
+    - fix issue with SimExtraInfo introduced by 2.3.1
+    """,
     "2.3.2": """
     - fix RocketSim failure to import breaking things even if SimExtraInfo is unused
     """,

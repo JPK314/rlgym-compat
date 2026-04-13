@@ -228,7 +228,8 @@ class SimExtraInfo:
                 if ball_touched:
                     self._ball_touch_ticks[car_id].append(self._tick_count + t + 1)
         self._ball_touch_ticks = {
-            k: v[-self.ball_touch_ticks_max_len :] for (k, v) in self._ball_touch_ticks
+            k: v[-self.ball_touch_ticks_max_len :]
+            for (k, v) in self._ball_touch_ticks.items()
         }
         self._tick_count = packet.match_info.frame_num
         self._set_sim_state(packet)
