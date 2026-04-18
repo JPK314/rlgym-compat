@@ -67,10 +67,7 @@ class GameState(Generic[AgentID]):
         match_configuration=MatchConfiguration(),
         tick_skip=-1,
         standard_map=True,
-        agent_ids_fn: Callable[[GamePacket], Dict[int, AgentID]] = lambda packet: {
-            player_info.player_id: player_info.player_id
-            for player_info in packet.players
-        },
+        agent_ids_fn: Optional[Callable[[GamePacket], Dict[int, AgentID]]] = None,
     ) -> GameState[Any]:
         assert (
             tick_skip == -1
@@ -121,6 +118,11 @@ class GameState(Generic[AgentID]):
                 idx for idx in range(len(field_info.boost_pads))
             ]
         state._first_update_call = True
+        if agent_ids_fn is None:
+            agent_ids_fn = lambda packet: {
+                player_info.player_id: player_info.player_id
+                for player_info in packet.players
+            }
         state._agent_ids_fn = agent_ids_fn
         return state
 
