@@ -5,9 +5,13 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.3.3"
+__version__ = "2.3.4"
 
 release_notes = {
+    "2.3.4": """
+    - fix dtypes in physics objects to be consistent with rocketsim engine behavior in rlgym v2
+    - add agent_ids_fn as an optional parameter to GameState upon creation to calculate agent ids based on packet and provide a mapping from player ids (in packet) to agent id (arbitrary type). Default value for this is no change from previous functionality
+    """,
     "2.3.3": """
     - fix issue with SimExtraInfo introduced by 2.3.1
     """,

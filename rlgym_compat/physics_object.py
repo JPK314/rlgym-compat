@@ -66,9 +66,13 @@ class PhysicsObject:
     def rotation_mtx(self) -> np.ndarray:
         if self._rotation_mtx is None:
             if self._quaternion is not None:
-                self._rotation_mtx = quat_to_rot_mtx(self._quaternion)
+                self._rotation_mtx = quat_to_rot_mtx(self._quaternion).astype(
+                    np.float32
+                )
             elif self._euler_angles is not None:
-                self._rotation_mtx = euler_to_rotation(self._euler_angles)
+                self._rotation_mtx = euler_to_rotation(self._euler_angles).astype(
+                    np.float32
+                )
             else:
                 raise ValueError
         return self._rotation_mtx
@@ -128,10 +132,11 @@ class PhysicsObject:
     @staticmethod
     def create_compat_physics_object():
         physics_object = PhysicsObject()
-        physics_object.position = np.zeros(3)
-        physics_object.linear_velocity = np.zeros(3)
-        physics_object.angular_velocity = np.zeros(3)
-        physics_object._rlbot_euler_angles = np.zeros(3)
+        physics_object.position = np.zeros(3, dtype=np.float32)
+        physics_object.linear_velocity = np.zeros(3, dtype=np.float32)
+        physics_object.angular_velocity = np.zeros(3, dtype=np.float32)
+        # due to a quirk of how the rocketsim engine and the math.py interact, euler angles become float64
+        physics_object._rlbot_euler_angles = np.zeros(3, dtype=np.float64)
         return physics_object
 
     def update(self, physics: Physics):

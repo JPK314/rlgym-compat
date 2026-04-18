@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, Optional, Generic, TypeVar, Any, Callable
 
 import numpy as np
 from rlbot.flat import (
@@ -17,19 +19,22 @@ from .game_config import GameConfig
 from .physics_object import PhysicsObject
 from .utils import create_default_init
 
+AgentID = TypeVar("AgentID")
+
 
 @dataclass(init=False)
-class GameState:
+class GameState(Generic[AgentID]):
     tick_count: int
     goal_scored: bool
     config: GameConfig
-    cars: Dict[int, Car]
+    cars: Dict[AgentID, Car]
     ball: PhysicsObject
     _inverted_ball: PhysicsObject
     boost_pad_timers: np.ndarray
     _inverted_boost_pad_timers: np.ndarray
 
     _first_update_call: bool
+    _agent_ids_fn: Callable[[GamePacket], Dict[int, AgentID]]
     _tick_skip: int
     # Unless something changes, this mapping will be [14,10,7,12,8,11,29,4,3,15,18,30,1,2,5,6,9,20,19,22,21,23,25,32,31,26,27,24,28,33,17,13,16,0] for the standard map.
     _boost_pad_order_mapping: np.ndarray
@@ -62,7 +67,11 @@ class GameState:
         match_configuration=MatchConfiguration(),
         tick_skip=-1,
         standard_map=True,
-    ):
+        agent_ids_fn: Callable[[GamePacket], Dict[int, AgentID]] = lambda packet: {
+            player_info.player_id: player_info.player_id
+            for player_info in packet.players
+        },
+    ) -> GameState[Any]:
         assert (
             tick_skip == -1
         ), "`tick_skip` was passed as a parameter to `create_compat_game_state`. This parameter is no longer used and should be removed, but be warned - there has been a breaking change for Car ball_touches to better reflect how this variable relates to the number of game ticks your action parser returns engine actions for each time it is called (which is not necessarily constant). Users who care about `Car`s' ball_touches should take care to manually call the new method `reset_car_ball_touches` appropriately."
@@ -112,6 +121,7 @@ class GameState:
                 idx for idx in range(len(field_info.boost_pads))
             ]
         state._first_update_call = True
+        state._agent_ids_fn = agent_ids_fn
         return state
 
     def reset_car_ball_touches(self):
@@ -128,18 +138,20 @@ class GameState:
             self.tick_count = packet.match_info.frame_num
             self._first_update_call = False
             doing_first_call = True
-
+        agent_ids_map = self._agent_ids_fn(packet)
         # Initialize new players
         for player_index, player_info in enumerate(packet.players):
             if player_info.player_id not in self.cars:
-                self.cars[player_info.player_id] = Car.create_compat_car(
+                self.cars[agent_ids_map[player_info.player_id]] = Car.create_compat_car(
                     packet, player_index, self._tick_skip
                 )
         # Remove old players
-        packet_player_ids = [player.player_id for player in packet.players]
+        packet_agent_ids = [
+            agent_ids_map[player.player_id] for player in packet.players
+        ]
         agent_ids_to_remove = []
         for agent_id in self.cars:
-            if agent_id not in packet_player_ids:
+            if agent_id not in packet_agent_ids:
                 agent_ids_to_remove.append(agent_id)
         for agent_id in agent_ids_to_remove:
             self.cars.pop(agent_id)
@@ -159,7 +171,7 @@ class GameState:
             ball = None
 
         for player_index, player_info in enumerate(packet.players):
-            self.cars[player_info.player_id].update(
+            self.cars[agent_ids_map[player_info.player_id]].update(
                 player_info,
                 packet.match_info.frame_num,
                 extra_player_info=(
