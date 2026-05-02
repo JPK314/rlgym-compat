@@ -5,9 +5,12 @@
 # 3) we can import it into your module module
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 
-__version__ = "2.3.5"
+__version__ = "2.3.6"
 
 release_notes = {
+    "2.3.6": """
+    - update math functions to maintain dtype and fix edge case in physics object orientation array caching
+    """,
     "2.3.5": """
     - change function signature for v2 create_compat_game_state to make agent_ids_fn optional instead of with default lambda function in function signature
     """,

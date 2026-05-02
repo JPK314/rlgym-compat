@@ -52,7 +52,7 @@ def cosine_similarity(a, b):
     return np.dot(a / np.linalg.norm(a), b / np.linalg.norm(b))
 
 
-def quat_to_euler(quat):
+def quat_to_euler(quat: np.ndarray):
     w, x, y, z = quat
     sinr_cosp = 2 * (w * x + y * z)
     cosr_cosp = 1 - 2 * (x * x + y * y)
@@ -67,7 +67,7 @@ def quat_to_euler(quat):
         pitch = np.arcsin(sinp)
     yaw = np.arctan2(siny_cosp, cosy_cosp)
 
-    return np.array([-pitch, yaw, -roll])
+    return np.array([-pitch, yaw, -roll], dtype=quat.dtype)
 
 
 # From RLUtilities
@@ -77,7 +77,7 @@ def quat_to_rot_mtx(quat: np.ndarray) -> np.ndarray:
     y = -quat[2]
     z = -quat[3]
 
-    theta = np.zeros((3, 3))
+    theta = np.zeros((3, 3), dtype=quat.dtype)
 
     norm = np.dot(quat, quat)
     if norm != 0:
@@ -103,7 +103,7 @@ def quat_to_rot_mtx(quat: np.ndarray) -> np.ndarray:
 
 def rotation_to_quaternion(m: np.ndarray) -> np.ndarray:
     trace = np.trace(m)
-    q = np.zeros(4)
+    q = np.zeros(4, dtype=m.dtype)
 
     if trace > 0:
         s = (trace + 1) ** 0.5
@@ -140,11 +140,11 @@ def rotation_to_quaternion(m: np.ndarray) -> np.ndarray:
     return -q
 
 
-def euler_to_rotation(pyr):
+def euler_to_rotation(pyr: np.ndarray):
     cp, cy, cr = np.cos(pyr)
     sp, sy, sr = np.sin(pyr)
 
-    theta = np.zeros((3, 3))
+    theta = np.zeros((3, 3), dtype=pyr.dtype)
 
     # front
     theta[0, 0] = cp * cy
